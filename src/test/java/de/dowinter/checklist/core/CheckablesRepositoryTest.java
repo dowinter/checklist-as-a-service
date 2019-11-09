@@ -1,4 +1,4 @@
-package de.dowinter.core;
+package de.dowinter.checklist.core;
 
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package de.dowinter.core;
+package de.dowinter.checklist.core;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

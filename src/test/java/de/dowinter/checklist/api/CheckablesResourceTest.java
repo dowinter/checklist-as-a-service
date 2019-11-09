@@ -1,7 +1,7 @@
-package de.dowinter.api;
+package de.dowinter.checklist.api;
 
-import de.dowinter.core.Checkable;
-import de.dowinter.core.CheckablesRepository;
+import de.dowinter.checklist.core.Checkable;
+import de.dowinter.checklist.core.CheckablesRepository;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
