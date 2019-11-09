@@ -102,7 +102,7 @@ class CheckablesRepositoryTest {
             Long actual = cut.save(checkable);
             verify(checkable).getId();
 
-            assertEquals(actual, TEST_ID);
+            assertEquals(TEST_ID, actual);
         }
     }
 
