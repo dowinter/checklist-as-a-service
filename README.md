@@ -1,2 +1,3 @@
 # Checklist-as-a-Service: A quarkus experiment
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dowinter_checklist-as-a-service&metric=alert_status)](https://sonarcloud.io/dashboard?id=dowinter_checklist-as-a-service) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=dowinter_checklist-as-a-service&metric=coverage)](https://sonarcloud.io/dashboard?id=dowinter_checklist-as-a-service) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=dowinter_checklist-as-a-service&metric=ncloc)](https://sonarcloud.io/dashboard?id=dowinter_checklist-as-a-service)
