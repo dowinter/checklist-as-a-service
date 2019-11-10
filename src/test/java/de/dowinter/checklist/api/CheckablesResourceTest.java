@@ -22,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,7 +30,9 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class CheckablesResourceTest {
 
-    private static final Long TEST_ID = 123L;
+    private static final Long TEST_CHECKABLE_ID = 123L;
+    private static final String TEST_CHECKLIST_ID = "testlist";
+
     @InjectMocks
     private CheckablesResource cut;
 
@@ -43,13 +46,13 @@ class CheckablesResourceTest {
     class GetAll {
         @Test
         void whenGetAllShouldCallRepository() {
-            cut.getAll();
-            verify(repository).all();
+            cut.getAll(TEST_CHECKLIST_ID);
+            verify(repository).getAllCheckablesFromChecklist(TEST_CHECKLIST_ID);
         }
 
         @Test
         void whenGetAllShouldReturnOK() {
-            int actual = cut.getAll().getStatus();
+            int actual = cut.getAll(TEST_CHECKLIST_ID).getStatus();
             assertEquals(actual, Response.Status.OK.getStatusCode());
         }
     }
@@ -57,22 +60,24 @@ class CheckablesResourceTest {
     @Nested
     class GetSingle {
         @Test
-        void whenGetSingleShouldCallRepositoryWithId() {
-            cut.getCheckable(TEST_ID);
-            verify(repository).withId(TEST_ID);
+        void whenGetSingleShouldCallRepositoryWithChecklistIdAndCheckableId() {
+            cut.getCheckable(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID);
+            verify(repository).getCheckableFromChecklist(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID);
         }
 
         @Test
         void whenNoCheckableShouldReturnNotFound() {
-            given(repository.withId(anyLong())).willReturn(Optional.empty());
-            int actual = cut.getCheckable(TEST_ID).getStatus();
+            given(repository.getCheckableFromChecklist(anyString(), anyLong()))
+                    .willReturn(Optional.empty());
+            int actual = cut.getCheckable(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID).getStatus();
             assertEquals(actual, Response.Status.NOT_FOUND.getStatusCode());
         }
 
         @Test
         void whenCheckableExistsShouldReturnOK() {
-            given(repository.withId(anyLong())).willReturn(Optional.ofNullable(mock(Checkable.class)));
-            int actual = cut.getCheckable(TEST_ID).getStatus();
+            given(repository.getCheckableFromChecklist(anyString(), anyLong()))
+                    .willReturn(Optional.ofNullable(mock(Checkable.class)));
+            int actual = cut.getCheckable(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID).getStatus();
             assertEquals(actual, Response.Status.OK.getStatusCode());
         }
     }
@@ -82,24 +87,24 @@ class CheckablesResourceTest {
         @Test
         void whenAddShouldCallRepositoryWithCheckable() {
             Checkable givenCheckable = mock(Checkable.class);
-            cut.addCheckable(givenCheckable);
-            verify(repository).save(givenCheckable);
+            cut.addCheckable(TEST_CHECKLIST_ID, givenCheckable);
+            verify(repository).addCheckable(TEST_CHECKLIST_ID, givenCheckable);
         }
 
         @Test
         void shouldReturnResponseWithStatusCreatedAndLocationHeader() throws URISyntaxException {
             given(uriInfo
                     .getAbsolutePathBuilder()
-                    .path(TEST_ID.toString())
+                    .path(TEST_CHECKABLE_ID.toString())
                     .build())
-                .willReturn(new URI("http://dummy/check/" + TEST_ID));
+                .willReturn(new URI("http://dummy/check/" + TEST_CHECKABLE_ID));
 
             Checkable givenCheckable = mock(Checkable.class);
-            given(givenCheckable.getId()).willReturn(TEST_ID);
+            given(givenCheckable.getId()).willReturn(TEST_CHECKABLE_ID);
 
-            Response actual = cut.addCheckable(givenCheckable);
+            Response actual = cut.addCheckable(TEST_CHECKLIST_ID, givenCheckable);
             assertEquals(Response.Status.CREATED.getStatusCode(), actual.getStatus());
-            assertThat(actual.getLocation().toString(), endsWith(TEST_ID.toString()));
+            assertThat(actual.getLocation().toString(), endsWith(TEST_CHECKABLE_ID.toString()));
         }
     }
 
@@ -110,25 +115,27 @@ class CheckablesResourceTest {
         void whenToggleShouldInvertCheckable(boolean initialState) {
             Checkable givenCheckable = mock(Checkable.class);
             given(givenCheckable.isChecked()).willReturn(initialState);
-            given(repository.withId(TEST_ID)).willReturn(Optional.of(givenCheckable));
-            cut.toggleCheckable(TEST_ID);
+            given(repository.getCheckableFromChecklist(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID))
+                    .willReturn(Optional.of(givenCheckable));
+            cut.toggleCheckable(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID);
             verify(givenCheckable).setChecked(!initialState);
         }
 
         @Test
         void whenNoCheckableShouldReturnNotFound() {
-            given(repository.withId(anyLong())).willReturn(Optional.empty());
-            int actual = cut.toggleCheckable(TEST_ID).getStatus();
+            given(repository.getCheckableFromChecklist(anyString(), anyLong()))
+                    .willReturn(Optional.empty());
+            int actual = cut.toggleCheckable(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID).getStatus();
             assertEquals(actual, Response.Status.NOT_FOUND.getStatusCode());
         }
 
         @Test
         void whenCheckableExistsShouldReturnNoContent() {
-            given(repository.withId(anyLong())).willReturn(Optional.ofNullable(mock(Checkable.class)));
-            int actual = cut.toggleCheckable(TEST_ID).getStatus();
+            given(repository.getCheckableFromChecklist(anyString(), anyLong()))
+                    .willReturn(Optional.ofNullable(mock(Checkable.class)));
+            int actual = cut.toggleCheckable(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID).getStatus();
             assertEquals(actual, Response.Status.NO_CONTENT.getStatusCode());
         }
 
     }
-
 }

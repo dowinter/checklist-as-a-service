@@ -9,108 +9,76 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Answers;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.persistence.EntityManager;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class CheckablesRepositoryTest {
-    private static final Long TEST_ID = 123L;
+    private static final String TEST_CHECKLIST_ID = "test-checklist";
+    private static final Long TEST_CHECKABLE_ID = 123L;
 
     @InjectMocks
-    private
-    CheckablesRepository cut;
+    private CheckablesRepository cut;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private
-    EntityManager em;
+    private EntityManager em;
 
     @Mock
-    private
-    Checkable checkable;
+    private Checklist checklist;
+
+    @Mock
+    private ChecklistRepository checklists;
 
     @Nested
     class GivenCheckableExists {
 
         @BeforeEach
         void setUp() {
-            given(em.find(ArgumentMatchers.<Class<Checkable>>any(), any(Long.class))).willReturn(checkable);
+            given(checklists.withId(anyString())).willReturn(Optional.of(checklist));
         }
 
         @Test
-        void thenShouldCallFindOnEntityManagerWithId() {
-            cut.withId(TEST_ID);
-            verify(em).find(ArgumentMatchers.<Class<Checkable>>any(), eq(TEST_ID));
+        void thenShouldGetChecklistFromRepository() {
+            cut.getCheckableFromChecklist(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID);
+            verify(checklists).withId(TEST_CHECKLIST_ID);
         }
 
         @Test
-        void thenWithIdShouldReturnCheckable() {
-            Optional<Checkable> actual = cut.withId(TEST_ID);
+        void thenShouldReturnCheckableWithMatchingId() {
+            Checkable expected = new Checkable();
+            expected.setId(TEST_CHECKABLE_ID);
+            given(checklist.getCheckables()).willReturn(Lists.newArrayList(expected));
+
+            Optional<Checkable> actual = cut.getCheckableFromChecklist(TEST_CHECKLIST_ID, TEST_CHECKABLE_ID);
             assertThat(actual.isPresent(), is(true));
-            assertThat(actual.get(), is(sameInstance(checkable)));
+            assertThat(actual.get().getId(), is(TEST_CHECKABLE_ID));
         }
     }
 
-    @Nested
-    class GivenCheckableDoesNotExist {
-        @BeforeEach
-        void setUp() {
-            given(em.find(ArgumentMatchers.<Class<Checkable>>any(), any(Long.class))).willReturn(null);
-        }
-
-        @Test
-        void thenShouldCallFindOnEntityManagerWithId() {
-            cut.withId(TEST_ID);
-            verify(em).find(ArgumentMatchers.<Class<Checkable>>any(), eq(TEST_ID));
-        }
-
-        @Test
-        void thenWithIdShouldReturnCheckable() {
-            Optional<Checkable> actual = cut.withId(TEST_ID);
-            assertThat(actual.isPresent(), is(false));
-        }
-    }
-
-    @Nested
-    class GivenCheckableCanBeSaved {
-        @Test
-        void whenSavedShouldCallEntityManager() {
-            cut.save(checkable);
-            verify(em).persist(any());
-        }
-
-        @Test
-        void whenSavedShouldReturnCheckableId() {
-            given(checkable.getId()).willReturn(TEST_ID);
-            Long actual = cut.save(checkable);
-            verify(checkable).getId();
-
-            assertEquals(TEST_ID, actual);
-        }
-    }
 
     @ParameterizedTest
     @MethodSource("createLists")
     void whenGetAllShouldReturnFullList(ArrayList<? extends Checkable> givenList) {
-        given(em.createQuery(any(), any()).getResultList()).will(iom -> givenList);
-        List<Checkable> actual = cut.all();
+        Checklist checklist = mock(Checklist.class);
+        given(checklist.getCheckables()).willAnswer(iom -> givenList);
+        given(checklists.withId(anyString())).willReturn(Optional.of(checklist));
+
+        List<Checkable> actual = cut.getAllCheckablesFromChecklist(TEST_CHECKLIST_ID);
         assertEquals(actual, givenList);
 
     }

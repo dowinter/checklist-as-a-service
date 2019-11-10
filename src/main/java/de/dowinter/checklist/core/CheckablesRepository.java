@@ -1,8 +1,11 @@
 package de.dowinter.checklist.core;
 
+import com.google.common.collect.Lists;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,16 +15,33 @@ public class CheckablesRepository {
     @Inject
     EntityManager em;
 
-    public Optional<Checkable> withId(long id) {
-        return Optional.ofNullable(em.find(Checkable.class, id));
+    @Inject
+    ChecklistRepository checklists;
+
+    @Transactional
+    public boolean addCheckable(String checklistId, Checkable c) {
+        Optional<Checklist> checklist = checklists.withId(checklistId);
+
+        if (checklist.isPresent()) {
+            em.persist(c);
+            checklist.get().getCheckables().add(c);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public Long save(Checkable checkable) {
-        em.persist(checkable);
-        return checkable.getId();
+    public Optional<Checkable> getCheckableFromChecklist(String checklistId, Long checkableId) {
+        Optional<Checklist> checklist = checklists.withId(checklistId);
+        return checklist.flatMap(
+            checklist1 -> checklist1.getCheckables().stream()
+                    .filter(checkable -> checkable.getId().equals(checkableId))
+                    .findFirst()
+        );
     }
 
-    public List<Checkable> all() {
-        return em.createQuery("SELECT c FROM Checkable c ORDER BY c.id", Checkable.class).getResultList();
+    public List<Checkable> getAllCheckablesFromChecklist(String checklistId) {
+        Optional<Checklist> checklist = checklists.withId(checklistId);
+        return checklist.map(Checklist::getCheckables).orElse(Lists.newArrayList());
     }
 }

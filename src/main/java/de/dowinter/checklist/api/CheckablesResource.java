@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Optional;
 
-@Path("/checkables")
+@Path("/checklists/{cid}/checkables")
 public class CheckablesResource {
 
     @Context
@@ -23,15 +23,15 @@ public class CheckablesResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAll() {
-        return Response.ok(checkables.all()).build();
+    public Response getAll(@PathParam("cid") String checklistId) {
+        return Response.ok(checkables.getAllCheckablesFromChecklist(checklistId)).build();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
-    public Response getCheckable(@PathParam("id") Long id) {
-        Optional<Checkable> checkable = checkables.withId(id);
+    public Response getCheckable(@PathParam("cid") String checklistId, @PathParam("id") Long checkableId) {
+        Optional<Checkable> checkable = checkables.getCheckableFromChecklist(checklistId, checkableId);
         if (checkable.isPresent()) {
             return Response.ok(checkable.get()).build();
         } else {
@@ -41,8 +41,8 @@ public class CheckablesResource {
 
     @POST
     @Transactional
-    public Response addCheckable(Checkable c) {
-        checkables.save(c);
+    public Response addCheckable(@PathParam("cid") String checklistId, Checkable c) {
+        checkables.addCheckable(checklistId, c);
         return Response
                 .created(uriInfo
                         .getAbsolutePathBuilder()
@@ -54,8 +54,8 @@ public class CheckablesResource {
     @POST
     @Path("/{id}/toggle")
     @Transactional
-    public Response toggleCheckable(@PathParam("id") Long id) {
-        Optional<Checkable> checkable = checkables.withId(id);
+    public Response toggleCheckable(@PathParam("cid") String checklistId, @PathParam("id") Long checkableId) {
+        Optional<Checkable> checkable = checkables.getCheckableFromChecklist(checklistId, checkableId);
 
         if (checkable.isPresent()) {
             checkable.get().setChecked(!checkable.get().isChecked());
