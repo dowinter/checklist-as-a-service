@@ -19,9 +19,12 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -95,6 +98,16 @@ class ChecklistsResourceTest {
             Response actual = cut.addChecklist(givenChecklist);
             assertEquals(Response.Status.CREATED.getStatusCode(), actual.getStatus());
             assertThat(actual.getLocation().toString(), endsWith(TEST_ID));
+        }
+
+        @Test
+        void whenRollbackExceptionsThrownMapToConflict() throws RollbackException {
+            Checklist givenChecklist = mock(Checklist.class);
+            willThrow(new RollbackException()).given(repository).save(any());
+
+            int actual = cut.addChecklist(givenChecklist).getStatus();
+            assertThat(actual, is(Response.Status.CONFLICT.getStatusCode()));
+
         }
     }
 
