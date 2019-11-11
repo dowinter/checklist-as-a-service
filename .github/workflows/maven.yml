@@ -1,17 +1,19 @@
-name: Java CI
+name: build-test-sonar
 
 on: [push]
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v1
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Start postgres
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql password: 'mysecretpassword'  # See https://hub.docker.com/_/postgres for available versions
     - name: Build with Maven
       run: mvn -B install sonar:sonar
       env:
