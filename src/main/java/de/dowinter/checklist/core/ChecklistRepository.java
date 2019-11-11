@@ -1,10 +1,10 @@
 package de.dowinter.checklist.core;
 
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
-import javax.transaction.RollbackException;
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -20,9 +20,15 @@ public class ChecklistRepository {
     }
 
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
-    // RollbackException needed here because Arc wraps it in Undeclared unchecked
-    public void save(Checklist checklist) throws RollbackException {
-        em.persist(checklist);
+    public boolean save(Checklist checklist) {
+        try {
+            em.persist(checklist);
+            em.flush();
+
+            return true;
+        } catch (PersistenceException exception) {
+            return false;
+        }
     }
 
     public List<Checklist> all() {

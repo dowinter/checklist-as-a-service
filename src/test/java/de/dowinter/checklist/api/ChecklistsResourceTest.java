@@ -10,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.transaction.RollbackException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
@@ -24,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -83,7 +81,7 @@ class ChecklistsResourceTest {
     @Nested
     class Add {
         @Test
-        void whenAddShouldCallRepositoryWithCheckable() throws RollbackException {
+        void whenAddShouldCallRepositoryWithCheckable() {
             Checklist givenChecklist = mock(Checklist.class);
             cut.addChecklist(givenChecklist);
             verify(repository).save(givenChecklist);
@@ -91,6 +89,7 @@ class ChecklistsResourceTest {
 
         @Test
         void shouldReturnResponseWithStatusCreatedAndLocationHeader() throws URISyntaxException {
+            given(repository.save(any())).willReturn(true);
             given(uriInfo.getAbsolutePath())
                     .willReturn(new URI("http://dummy/check/" + TEST_ID));
 
@@ -101,9 +100,9 @@ class ChecklistsResourceTest {
         }
 
         @Test
-        void whenRollbackExceptionsThrownMapToConflict() throws RollbackException {
+        void whenSaveFailsMapToConflict() {
             Checklist givenChecklist = mock(Checklist.class);
-            willThrow(new RollbackException()).given(repository).save(any());
+            given(repository.save(any())).willReturn(false);
 
             int actual = cut.addChecklist(givenChecklist).getStatus();
             assertThat(actual, is(Response.Status.CONFLICT.getStatusCode()));

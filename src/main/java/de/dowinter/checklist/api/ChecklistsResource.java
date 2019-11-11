@@ -4,7 +4,6 @@ import de.dowinter.checklist.core.Checklist;
 import de.dowinter.checklist.core.ChecklistRepository;
 
 import javax.inject.Inject;
-import javax.transaction.RollbackException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -43,17 +42,14 @@ public class ChecklistsResource {
     @PUT
     @Path("/{id}")
     public Response addChecklist(Checklist checklist) {
-        try {
-            checklists.save(checklist);
+        boolean saved = checklists.save(checklist);
+        if (saved) {
             return Response
                     .created(uriInfo.getAbsolutePath())
                     .build();
-        } catch (RollbackException ex) {
+        } else {
             return Response.status(Response.Status.CONFLICT)
                     .build();
         }
     }
-
-
-
 }

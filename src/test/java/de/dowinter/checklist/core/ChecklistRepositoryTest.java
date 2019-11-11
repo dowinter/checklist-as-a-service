@@ -15,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.persistence.EntityManager;
-import javax.transaction.RollbackException;
+import javax.persistence.PersistenceException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -46,9 +47,30 @@ class ChecklistRepositoryTest {
     @Nested
     class GivenCheckableCanBeSaved {
         @Test
-        void whenSavedShouldCallEntityManager() throws RollbackException {
+        void whenSavedShouldCallEntityManager() {
             cut.save(checklist);
             verify(em).persist(any());
+        }
+
+        @Test
+        void whenSavedShouldReturnTrue() {
+            boolean actual = cut.save(checklist);
+            assertThat(actual, is(true));
+        }
+    }
+
+    @Nested
+    class GivenCheckableCanNotBeSaved {
+
+        @BeforeEach
+        void setUp() {
+            willThrow(new PersistenceException()).given(em).persist(any());
+        }
+
+        @Test
+        void thenShouldReturnFalse() {
+            boolean actual = cut.save(checklist);
+            assertThat(actual, is(false));
         }
     }
 
