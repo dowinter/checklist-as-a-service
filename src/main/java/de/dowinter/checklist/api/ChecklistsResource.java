@@ -1,7 +1,7 @@
 package de.dowinter.checklist.api;
 
 import de.dowinter.checklist.core.Checklist;
-import de.dowinter.checklist.core.ChecklistRepository;
+import de.dowinter.checklist.data.ChecklistRepository;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;

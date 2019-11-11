@@ -1,7 +1,7 @@
 package de.dowinter.checklist.api;
 
 import de.dowinter.checklist.core.Checkable;
-import de.dowinter.checklist.core.CheckablesRepository;
+import de.dowinter.checklist.data.CheckablesRepository;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;

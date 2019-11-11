@@ -1,6 +1,8 @@
-package de.dowinter.checklist.core;
+package de.dowinter.checklist.data;
 
 import com.google.common.collect.Lists;
+import de.dowinter.checklist.core.Checkable;
+import de.dowinter.checklist.core.Checklist;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;

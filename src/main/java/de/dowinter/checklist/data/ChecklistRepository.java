@@ -1,4 +1,6 @@
-package de.dowinter.checklist.core;
+package de.dowinter.checklist.data;
+
+import de.dowinter.checklist.core.Checklist;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;

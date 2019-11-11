@@ -1,6 +1,10 @@
-package de.dowinter.checklist.core;
+package de.dowinter.checklist.data;
 
 import com.google.common.collect.Lists;
+import de.dowinter.checklist.core.Checkable;
+import de.dowinter.checklist.core.Checklist;
+import de.dowinter.checklist.data.CheckablesRepository;
+import de.dowinter.checklist.data.ChecklistRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
